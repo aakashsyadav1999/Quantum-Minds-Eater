@@ -1,0 +1,13 @@
+pandas
+langchain
+numpy
+langchain_experimental
+langchain_openai
+tabulate
+pydantic
+logfire
+requests
+ipykernel
+python-dotenv
+openai
+streamlit
