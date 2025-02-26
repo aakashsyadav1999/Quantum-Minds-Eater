@@ -1,7 +1,5 @@
-#Streamlit app
 import os
 import sys
-import threading
 import tempfile
 import streamlit as st
 
@@ -13,51 +11,58 @@ from src.components.agent_runner import Agent, File
 
 # Define AgentRunnerPipeline
 class AgentRunnerPipeline:
-    def __init__(self, file_path, question):
-        self.agent_runner = Agent(
-            agent_name="CSV Agent",
-            file=File(csv_file=file_path),  # ✅ Correctly initializing File
-            agent_type="csv_agent"
-        )
-        self.question = question  # Store question separately
+    def __init__(self, file_path=None, question=""):
+        # Determine agent type dynamically
+        agent_type = "csv_agent" if file_path else "sql_agent"
+
+        # ✅ Only pass `file` when `file_path` exists
+        agent_params = {
+            "agent_name": agent_type,
+            "agent_type": agent_type
+        }
+        if file_path:  
+            agent_params["file"] = File(csv_file=file_path)  # ✅ Only add file if present
+
+        self.agent_runner = Agent(**agent_params)
+        self.question = question
 
     def run(self):
-        return self.agent_runner.run(self.question)  # ✅ Correctly passing question
+        return self.agent_runner.run(self.question)
 
 # Streamlit UI
-st.title("CSV Agent Runner")
+st.title("Agent Runner")
 
-uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
+# User must enter a question
+question = st.text_input("Enter your question", "")
 
-if uploaded_file is not None:
-    # Save file to a temporary location
+# File is optional
+uploaded_file = st.file_uploader("Choose a CSV file (Optional)", type="csv")
+
+# Save file to a temporary location if uploaded
+temp_file_path = None
+if uploaded_file:
     with tempfile.NamedTemporaryFile(delete=False, suffix=".csv") as temp_file:
         temp_file.write(uploaded_file.getbuffer())
-        temp_file_path = temp_file.name  # Get temporary file path
-
+        temp_file_path = temp_file.name
     st.success(f"File uploaded and saved as: {temp_file_path}")
 
-    # Add user input for the question
-    question = st.text_input("Enter your question", "How many rows are in the CSV?")
+# Debugging
+st.write(f"Debug: Question entered - '{question}'")
+st.write(f"Debug: File path - '{temp_file_path}'")
 
-    # Initialize agent
+# Ensure a question is provided
+if question.strip():
     agent_runner_pipeline = AgentRunnerPipeline(file_path=temp_file_path, question=question)
-
-    # Function to run agent in a separate thread
-    def run_agent():
-        try:
-            agent_runner_pipeline.run()
-            st.success("Agent has finished running ✅")
-        except Exception as e:
-            st.error(f"Error while running agent: {str(e)}")
 
     # Run agent on button click
     if st.button("Run Agent"):
         with st.spinner("Running agent... Please wait ⏳"):
             try:
-                response = agent_runner_pipeline.run()  # ✅ Capture response
+                response = agent_runner_pipeline.run()
                 st.success("Agent has finished running ✅")
                 st.write("### Response:")
-                st.write(response)  # ✅ Display response in UI
+                st.write(response)
             except Exception as e:
                 st.error(f"Error while running agent: {str(e)}")
+else:
+    st.warning("Please enter a question to proceed.")
