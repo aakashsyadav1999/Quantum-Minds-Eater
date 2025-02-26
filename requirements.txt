@@ -11,3 +11,4 @@ ipykernel
 python-dotenv
 openai
 streamlit
+pyodbc
