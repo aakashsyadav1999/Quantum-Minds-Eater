@@ -12,3 +12,7 @@ python-dotenv
 openai
 streamlit
 pyodbc
+google-auth-httplib2
+google-auth-oauthlib
+google-api-python-client
+beautifulsoup4
