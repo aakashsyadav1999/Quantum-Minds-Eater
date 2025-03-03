@@ -109,7 +109,7 @@ class Email:
         print("\n📌 Latest Draft Subject:", search_response)
     
     # Run the Email class 
-    def run(self):
+    def run_agent(self):
         # Load Gmail credentials
         credentials = self.credentials()
         # Build Gmail API resource
@@ -128,4 +128,4 @@ if __name__ == "__main__":
     email = Email(to_email=input("Enter recipient's email: ").strip(),
                   subject=input("Enter email subject: ").strip(),
                   body=input("Enter a short description of your email content: ").strip())
-    email.run()
+    email.run_agent()
