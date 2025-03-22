@@ -1,0 +1,34 @@
+[project]
+name = "Quantum Minds Eater"
+version = "0.1.0"
+description = "A project for Quantum Minds Eater"
+authors = ["Your Name <aakashsyadav1999@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+keywords = ["quantum", "minds", "eater"]
+
+[dependencies]
+pandas = "*"
+langchain = "*"
+numpy = "*"
+langchain_experimental = "*"
+langchain_openai = "*"
+tabulate = "*"
+pydantic = "*"
+logfire = "*"
+requests = "*"
+ipykernel = "*"
+python-dotenv = "*"
+openai = "*"
+streamlit = "*"
+pyodbc = "*"
+google-auth-httplib2 = "*"
+google-auth-oauthlib = "*"
+google-api-python-client = "*"
+beautifulsoup4 = "*"
+duckduckgo-search = "*"
+phidata = "*"
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
