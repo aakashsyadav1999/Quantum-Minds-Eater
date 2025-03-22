@@ -15,10 +15,11 @@ class AgentRunnerPipeline:
         # Prepare agent parameters dynamically
         agent_params = {"agent_name": agent_type, "agent_type": agent_type}
 
+        # Ensure question is valid for SQL/CSV agents
         if agent_type in ["csv_agent", "sql_agent"]:
-            if not question:  # Ensure question is not None
+            if not question or not question.strip():  # Fix: Strip whitespace and validate
                 raise ValueError("Question is required for CSV/SQL agents.")
-            agent_params["question"] = question  # ✅ Only for CSV/SQL agents
+            agent_params["question"] = question.strip()  # Fix: Pass stripped question
 
         if agent_type == "csv_agent" and file_path:
             agent_params["file"] = File(csv_file=file_path)
@@ -27,6 +28,14 @@ class AgentRunnerPipeline:
             if not all([to_email, subject, body]):
                 raise ValueError("Email agent requires recipient's email, subject, and body.")
             agent_params.update({"to_email": to_email, "subject": subject, "body": body})
+            
+        if agent_type in ["website_research"]:
+            if not question or not question.strip():  # Fix: Strip whitespace and validate
+                raise ValueError("Question is required for website_research agents.")
+            agent_params["question"] = question.strip()  # Fix: Pass stripped question
+
+        # Debugging - Ensure agent parameters are correct
+        st.write(f"Debug: Agent parameters - {agent_params}")
 
         self.agent_runner = Agent(**agent_params)
 
@@ -37,7 +46,7 @@ class AgentRunnerPipeline:
 st.title("Agent Runner")
 
 # Select Agent Type
-agent_type = st.selectbox("Select an Agent Type", ["csv_agent", "sql_agent", "email_agent"])
+agent_type = st.selectbox("Select an Agent Type", ["csv_agent", "sql_agent", "email_agent", "website_research"])
 
 # CSV File Upload (Only for CSV Agent)
 temp_file_path = None
@@ -51,8 +60,8 @@ if agent_type == "csv_agent":
 
 # Inputs for CSV/SQL Agents
 question = None
-if agent_type in ["csv_agent", "sql_agent"]:
-    question = st.text_input("Enter your question", "")
+if agent_type in ["csv_agent", "sql_agent", "website_research"]:
+    question = st.text_input("Enter your question", "").strip()  # Fix: Strip whitespace
 
 # Email Inputs (Only for Email Agent)
 to_email, subject, body = None, None, None
@@ -61,35 +70,43 @@ if agent_type == "email_agent":
     subject = st.text_input("Enter email subject", "")
     body = st.text_area("Enter email content", "")
 
-# Debugging
+# Debugging - Log user inputs
 st.write(f"Debug: Agent Type - '{agent_type}'")
-if question:
-    st.write(f"Debug: Question entered - '{question}'")
+st.write(f"Debug: Captured question before processing: '{question}' (Type: {type(question)})")
 if temp_file_path:
     st.write(f"Debug: File path - '{temp_file_path}'")
 
-# Ensure the required inputs are provided
-if (agent_type in ["csv_agent", "sql_agent"] and not question.strip()):
-    st.warning("Please enter a question to proceed.")
-elif (agent_type == "email_agent" and not all([to_email, subject, body])):
-    st.warning("Please fill in all email fields to proceed.")
-else:
-    agent_runner_pipeline = AgentRunnerPipeline(
-        agent_type=agent_type,
-        file_path=temp_file_path,
-        question=question,
-        to_email=to_email,
-        subject=subject,
-        body=body
-    )
+# Validation checks before running the agent
+can_proceed = True
 
-    # Run agent on button click
-    if st.button("Run Agent"):
-        with st.spinner("Running agent... Please wait ⏳"):
-            try:
-                response = agent_runner_pipeline.run()
-                st.success("Agent has finished running ✅")
-                st.write("### Response:")
-                st.write(response)
-            except Exception as e:
-                st.error(f"Error while running agent: {str(e)}")
+if agent_type in ["csv_agent", "sql_agent"] and not question:
+    st.warning("Please enter a question to proceed.")
+    can_proceed = False
+elif agent_type == "email_agent" and not all([to_email, subject, body]):
+    st.warning("Please fill in all email fields to proceed.")
+    can_proceed = False
+elif agent_type in ["website_research"] and not question:
+    st.warning("Please enter a question to proceed.")
+    can_proceed = False
+
+# Run agent on button click only if validation passes
+if st.button("Run Agent") and can_proceed:
+    with st.spinner("Running agent... Please wait ⏳"):
+        try:
+            # Debugging before execution
+            st.write(f"Debug - Final question value being passed: '{question}' (type: {type(question)})")
+            
+            agent_runner_pipeline = AgentRunnerPipeline(
+                agent_type=agent_type,
+                file_path=temp_file_path,
+                question=question,
+                to_email=to_email,
+                subject=subject,
+                body=body
+            )
+            response = agent_runner_pipeline.run()
+            st.success("Agent has finished running ✅")
+            st.write("### Response:")
+            st.write(response)
+        except Exception as e:
+            st.error(f"Error while running agent: {str(e)}")
