@@ -38,10 +38,10 @@ Quantum Minds Eater is a project designed to streamline data querying and analys
 
     # Database settings
     DATABASE = {
-        'HOST': '192.168.29.221',
-        'PORT': '2021',
-        'USER': 'ray',
-        'PASSWORD': 'advicr49--',
+        'HOST': '',
+        'PORT': '',
+        'USER': '',
+        'PASSWORD': '',
         'NAME': 'health',
         'DRIVER': 'ODBC Driver 17 for SQL Server',
     }
@@ -107,7 +107,7 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Authors
 
-- Your Name - [your.email@example.com](mailto:your.email@example.com)
+- Aakash Yadav
 
 ## Acknowledgments
 
